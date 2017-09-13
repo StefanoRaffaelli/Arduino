@@ -1,0 +1,13 @@
+I am very new at this and was directed here because of my problem with Windows 7 not recognizing Arduino Uno R3.  What I found here is not much in help with particular solutions.  While stumbling through different comments, and hoping for a tidbit of info as to solve my problem, I found a solution in that, what seems that others here too were having this problem, having Windows 7 forced to recognize Arduino Uno R3.  Sorry for this solution being redundant if this has been suggested before, it is only that the search I did pointed me here, and found nothing to help.  There is the importance to have download the file for programming the Arduino boards.
+
+1) In Windows, the device manager indicates an "Unknown Device."
+2) Hovering the mouse over "Unknown Device", right click and choose "Properties."
+3) A window pops up displaying three tabs (to know you are in the right area).  Under the "General" tab click the button "Update Driver."
+4) Another window pops up and gives you two choices, a) have the computer look for update drivers; and b) browse manually for the drivers, click "manually look for drivers".
+5) Another window pops up to direct you to the folder for the new drivers.  At the bottom of this window there is a green arrow pointing to "Let me pick from a list."  (This action is not updating drivers per say, but telling Windows 7 to add a device and therefore add the drivers).  Click on this button.
+6) The next window lists devices already in Windows database.  At the top of this list "Show all devices" should be highlighted, if not highlight it by clicking on it.  At the bottom of this window click "Next".
+7) The next window again lists Manufacture and Model.  At the bottom there is a button with "Have disk".  Click this button.
+8) As stated above, maneuver to the folder that you have downloaded from Arduino's web site in which you have installed.  Within this folder there is a subfolder called "Drivers".  In drivers there is a file called "Arduino Uno REV3" (among others).
+9) Clicking this file will solve the "Unknown Device" and Windows will recognize your new Arduino board.
+
+I hope this helps those with the same problem as I have had.
