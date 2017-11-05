@@ -1,0 +1,14 @@
+Ciao!
+Volevo condividere con il gruppo qualche test che ho fatto ultimamente con una NodeMCU.
+In particolare trovo davvero interessante la possibilità di far girare un piccolo webserver tutto contenuto nella memoria del chip (4Mb).
+Allego il file del progetto per chi fosse interessato.
+Per compilare è necessario installare innanzitutto il core per far funzionare l'ESP8266 con Arduino. 
+Io ho installato l'ultima versione disponibile 2.4.0-rc1 perché in questo modo è possibile fare lo scan delle reti wifi, ma si può usare anche la versione "stable" rinunciando a questa funzione.
+https://github.com/esp8266/Arduino/releases
+A questo punto si deve installare il tool "Arduino ESP8266 filesystem uploader" per poter caricare i file html, css, js che il nostro webserver invierà ai client
+https://github.com/esp8266/arduino-esp8266fs-plugin
+Ed infine è necessario installare le seguenti librerie: gestione del server vero e proprio (2 librerie), client NTP se serve, e ArduinoJson per inviare i dati in questo formato (anche questo opzionale, ma può semplificare molto il parsing dei dati lato client con javascript)
+https://github.com/me-no-dev/ESPAsyncTCP
+https://github.com/me-no-dev/ESPAsyncWebServer
+https://github.com/arduino-libraries/NTPClient
+https://github.com/bblanchon/ArduinoJson

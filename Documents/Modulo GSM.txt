@@ -1,0 +1,4 @@
+https://andrologiciels.wordpress.com/arduino/gsm/gsm-carte-siemens-tc35/
+
+http://www.instructables.com/id/Sending-SMS-with-Arduino-TC35-GSM-Module/
+

@@ -1,0 +1,22 @@
+https://medium.com/@nowir3s/getting-started-with-esp8266-875fb54441d6
+
+http://www.esp8266.com/wiki/doku.php?id=getting-started-with-the-esp8266
+
+https://github.com/esp8266/Arduino/issues/435
+
+https://esp8266.ru/esplorer/
+
+http://www.esp8266.com/viewtopic.php?f=23&t=6571
+
+https://github.com/espressif/ESP8266_NONOS_SDK
+
+https://nodemcu.readthedocs.io/en/master/en/upload/
+
+https://benlo.com/esp8266/esp8266QuickStart.html
+
+
+Lettura temperatura
+http://www.elec-cafe.com/temperature-sensor-on-the-web-with-esp8266-and-ds18b20/
+
+Display digitale
+https://www.losant.com/blog/how-to-connect-lcd-esp8266-nodemcu

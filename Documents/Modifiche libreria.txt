@@ -1,0 +1,4 @@
+-l'indirizzo del display è 0x3C non quello di default 0x3D
+-all'interno del file adafruit_ssd1306.h è necessario decommentare la riga "#define SSD1306_128_64" e commentare 
+"#define SSD1306_128_32" altrimenti il display funzionerà 
+con risoluzione 128x32
