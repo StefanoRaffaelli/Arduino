@@ -27,13 +27,20 @@ AF_DCMotor motorRR(4);
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 Servo name_servo;
 CarStatusIs currentStatus;
+String message;
+boolean autoMode = false;
 
 void setup() 
 {
   Serial.begin(115200);
+  Serial3.begin(9600);
 
-  name_servo.attach (10);
- 
+  name_servo.attach (9);
+  StartAutomaticMode();
+}
+
+void StartAutomaticMode()
+{
   Brake();
 
   LookAhead();
@@ -45,6 +52,14 @@ void setup()
 
 void loop() 
 {
+  ReadNextCommandFromBlueTooth();
+  
+  if(autoMode == false)
+  {
+    ReadNextDirectionFromBlueTooth();
+  }
+  else
+  {
     if(GetDistance() <= 20)
       currentStatus = obstacleFound;
   
@@ -64,6 +79,7 @@ void loop()
         HandleObstacle();
         break;
     }
+  }
 }
 
 void Brake()
@@ -163,7 +179,7 @@ void HandleObstacle()
   
   delay(1000);
 
-  GoBackward(200);
+  GoBackward(100);
   delay(1000);
 
   Brake();
@@ -227,5 +243,81 @@ void LookOnTheRight()
   name_servo.write(0);
 }
 
+void ReadNextCommandFromBlueTooth()
+{
+  while(Serial3.available()){
+    message+=char(Serial3.read());
+  }
+  
+  if(!Serial3.available() && message!="")
+  {
+    Serial.println(message); 
+    
+    if(message.startsWith("M"))
+    {
+      Serial.println("Manual mode anabled"); 
+      autoMode = false;
+      Brake();
+      message="";
+    }
+
+    if(message.startsWith("A"))
+    {
+      Serial.println("Automatic mode anabled"); 
+      autoMode = true;
+      Brake();
+      currentStatus = starting;
+      message="";
+    }
+  }
+  
+  delay(100);
+}
+
+
+void ReadNextDirectionFromBlueTooth()
+{
+  while(Serial3.available()){
+    message+=char(Serial3.read());
+  }
+  
+  if(!Serial3.available() && message!="")
+  {
+    Serial.println(message);
+    
+    if(message.startsWith("F"))
+    {
+      Serial.println("Go Farward with speed 200");
+      GoFarward(200);
+    }
+
+    if(message.startsWith("B"))
+    {
+      Serial.println("Go Backward with speed 200");
+      GoBackward(200);
+    }
+    
+    if(message.startsWith("L"))
+    {
+      Serial.println("Turn left with speed 200");
+      TurnLeft(500, 200);
+    }
+    
+    if(message.startsWith("R"))
+    {
+      Serial.println("Turn right with speed 200");
+      TurnRight(500, 200);
+    }
+    
+    if(message.startsWith("S"))
+    {
+      Serial.println("Brake the car!");
+      Brake();
+    }
+  }
+
+  message="";
+  delay(100);
+}
 
 
