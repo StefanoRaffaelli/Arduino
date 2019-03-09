@@ -1,100 +1,109 @@
-#include <ESP8266WiFi.h>
- 
-const char* ssid = "Magesh";
-const char* password = "jayakumar";
- 
-int ledPin = 13; // GPIO13
-WiFiServer server(80);
- 
-void setup() {
-  Serial.begin(115200);
-  delay(10);
- 
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
- 
-  // Connect to WiFi network
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
- 
-  WiFi.begin(ssid, password);
- 
+#include <Arduino.h>
+#ifdef ESP32
+  #include <WiFi.h>
+  #define RF_RECEIVER 13
+  #define RELAY_PIN_1 12
+  #define RELAY_PIN_2 14
+#else
+  #include <ESP8266WiFi.h>
+  #define RF_RECEIVER 5
+  #define RELAY_PIN_1 4
+  #define RELAY_PIN_2 14
+#endif
+#include "fauxmoESP.h"
+
+#define SERIAL_BAUDRATE 115200
+
+#define WIFI_SSID "RaffaelliG"
+#define WIFI_PASS "Cefalonia@740"
+
+#define LAMP_1 "lamp one"
+#define LAMP_2 "lamp two"
+
+fauxmoESP fauxmo;
+
+// Wi-Fi Connection
+void wifiSetup() {
+  // Set WIFI module to STA mode
+  WiFi.mode(WIFI_STA);
+
+  // Connect
+  Serial.printf("[WIFI] Connecting to %s ", WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  // Wait
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
     Serial.print(".");
+    delay(100);
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
- 
-  // Start the server
-  server.begin();
-  Serial.println("Server started");
- 
-  // Print the IP address
-  Serial.print("Use this URL to connect: ");
-  Serial.print("http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("/");
- 
+  Serial.println();
+
+  // Connected!
+  Serial.printf("[WIFI] STATION Mode, SSID: %s, IP address: %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 }
- 
+
+void setup() {
+  // Init serial port and clean garbage
+  Serial.begin(SERIAL_BAUDRATE);
+  Serial.println();
+
+  // Wi-Fi connection
+  wifiSetup();
+
+  // LED
+  pinMode(RELAY_PIN_1, OUTPUT);
+  digitalWrite(RELAY_PIN_1, HIGH);
+
+  pinMode(RELAY_PIN_2, OUTPUT);
+  digitalWrite(RELAY_PIN_2, HIGH);
+
+  // You can enable or disable the library at any moment
+  // Disabling it will prevent the devices from being discovered and switched
+  fauxmo.enable(true);
+
+  // Add virtual devices
+  fauxmo.addDevice(LAMP_1);
+  fauxmo.addDevice(LAMP_2);
+
+  // fauxmoESP 2.0.0 has changed the callback signature to add the device_id,
+  // this way it's easier to match devices to action without having to compare strings.
+  fauxmo.onSetState([](unsigned char device_id, const char * device_name, bool state) {
+    Serial.printf("[MAIN] Device #%d (%s) state: %s\n", device_id, device_name, state ? "ON" : "OFF");
+    if ( (strcmp(device_name, LAMP_1) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("RELAY 1 switched by Alexa");
+      //digitalWrite(RELAY_PIN_1, !digitalRead(RELAY_PIN_1));
+      if (state) {
+        digitalWrite(RELAY_PIN_1, LOW);
+      } else {
+        digitalWrite(RELAY_PIN_1, HIGH);
+      }
+    }
+    if ( (strcmp(device_name, LAMP_2) == 0) ) {
+      // this just sets a variable that the main loop() does something about
+      Serial.println("RELAY 2 switched by Alexa");
+      if (state) {
+        digitalWrite(RELAY_PIN_2, LOW);
+      } else {
+        digitalWrite(RELAY_PIN_2, HIGH);
+      }
+    }
+  });
+
+  /*
+  // Callback to retrieve current state (for GetBinaryState queries)
+  fauxmo.onGetState([](unsigned char device_id, const char * device_name) {
+      //return !digitalRead(RELAY_PIN_1);
+      return 
+  });*/
+}
+
 void loop() {
-  // Check if a client has connected
-  WiFiClient client = server.available();
-  if (!client) {
-    return;
-  }
- 
-  // Wait until the client sends some data
-  Serial.println("new client");
-  while(!client.available()){
-    delay(1);
-  }
- 
-  // Read the first line of the request
-  String request = client.readStringUntil('\r');
-  Serial.println(request);
-  client.flush();
- 
-  // Match the request
- 
-  int value = LOW;
-  if (request.indexOf("/LED=ON") != -1)  {
-    digitalWrite(ledPin, HIGH);
-    value = HIGH;
-  }
-  if (request.indexOf("/LED=OFF") != -1)  {
-    digitalWrite(ledPin, LOW);
-    value = LOW;
-  }
- 
-// Set ledPin according to the request
-//digitalWrite(ledPin, value);
- 
-  // Return the response
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/html");
-  client.println(""); //  do not forget this one
-  client.println("<!DOCTYPE HTML>");
-  client.println("<html>");
- 
-  client.print("Led pin is now: ");
- 
-  if(value == HIGH) {
-    client.print("On");
-  } else {
-    client.print("Off");
-  }
-  client.println("<br><br>");
-  client.println("<a href=\"/LED=ON\"\"><button>Turn On </button></a>");
-  client.println("<a href=\"/LED=OFF\"\"><button>Turn Off </button></a><br />");  
-  client.println("</html>");
- 
-  delay(1);
-  Serial.println("Client disonnected");
-  Serial.println("");
- 
+  // Since fauxmoESP 2.0 the library uses the "compatibility" mode by
+  // default, this means that it uses WiFiUdp class instead of AsyncUDP.
+  // The later requires the Arduino Core for ESP8266 staging version
+  // whilst the former works fine with current stable 2.3.0 version.
+  // But, since it's not "async" anymore we have to manually poll for UDP
+  // packets
+  fauxmo.handle();
 }
- 
