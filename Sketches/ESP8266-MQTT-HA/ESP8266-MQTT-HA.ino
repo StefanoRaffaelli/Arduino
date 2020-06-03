@@ -28,8 +28,8 @@ float temp = 0.0;
 float hum = 0.0;
 double currentPressure = 0.0;
 float temperatureDiff = 0.5;    // Temperature thresold
-float humidityDiff = 5.0;       // Humidity thresold
-float pressureDiff = 10.0;      // Pressure thresold
+float humidityDiff = 1.0;       // Humidity thresold
+float pressureDiff = 1.0;      // Pressure thresold
 long checkIntervall = 30000;    // Check intervall in milliseconds
 
 EspMQTTClient client(
@@ -120,61 +120,46 @@ void CheckHumidity()
 void CheckPressure()
 { 
   char status;
-  double T,P,p0;
+  double T = temp;
+  double P,p0;
 
-  status = pressure.startTemperature();
-  
+  // Start a pressure measurement: The parameter is the oversampling setting, from 0 to 3 (highest res, longest wait).
+  // If request is successful, the number of ms to wait is returned.
+  // If request is unsuccessful, 0 is returned.
+  status = pressure.startPressure(3);
+      
   if (status != 0)
   {
     delay(status); // Wait for the measurement to complete:
-
-    // Retrieve the completed temperature measurement: note that the measurement is stored in the variable T.
+  
+    // Retrieve the completed pressure measurement: Note that the measurement is stored in the variable P.
+    // Note also that the function requires the previous temperature measurement (T).
+    // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
     // Function returns 1 if successful, 0 if failure.
-    status = pressure.getTemperature(T);
+    status = pressure.getPressure(P,T);
     
     if (status != 0)
     {
-      // Start a pressure measurement: The parameter is the oversampling setting, from 0 to 3 (highest res, longest wait).
-      // If request is successful, the number of ms to wait is returned.
-      // If request is unsuccessful, 0 is returned.
-      status = pressure.startPressure(3);
+      // The pressure sensor returns absolute pressure, which varies with altitude.
+      // To remove the effects of altitude, use the sea level function and your current altitude.
+      // This number is commonly used in weather reports.
+      // Parameters: P = absolute pressure in mb, ALTITUDE = current altitude in m.
+      // Result: p0 = sea-level compensated pressure in mb
+      p0 = pressure.sealevel(P,ALTITUDE); 
       
-      if (status != 0)
+      if (CheckBound(p0, currentPressure, pressureDiff)) 
       {
-        delay(status); // Wait for the measurement to complete:
-
-        // Retrieve the completed pressure measurement: Note that the measurement is stored in the variable P.
-        // Note also that the function requires the previous temperature measurement (T).
-        // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
-        // Function returns 1 if successful, 0 if failure.
-        status = pressure.getPressure(P,T);
-        
-        if (status != 0)
-        {
-          // The pressure sensor returns absolute pressure, which varies with altitude.
-          // To remove the effects of altitude, use the sea level function and your current altitude.
-          // This number is commonly used in weather reports.
-          // Parameters: P = absolute pressure in mb, ALTITUDE = current altitude in m.
-          // Result: p0 = sea-level compensated pressure in mb
-          p0 = pressure.sealevel(P,ALTITUDE); 
-          
-          if (CheckBound(p0, currentPressure, pressureDiff)) 
-          {
-            currentPressure = p0;
-      
-            Serial.print("New pressure:");
-            Serial.println(String(currentPressure).c_str());
-      
-            client.publish(pressure_topic, String(currentPressure).c_str(), true);
-          }          
-        }
-        else Serial.println("error retrieving pressure measurement\n");
-      }
-      else Serial.println("error starting pressure measurement\n");
+        currentPressure = p0;
+  
+        Serial.print("New pressure:");
+        Serial.println(String(currentPressure).c_str());
+  
+        client.publish(pressure_topic, String(currentPressure).c_str(), true);
+      }          
     }
-    else Serial.println("error retrieving temperature measurement\n");
+    else Serial.println("error retrieving pressure measurement\n");
   }
-  else Serial.println("error starting temperature measurement\n");
+  else Serial.println("error starting pressure measurement\n");
 }
 
 bool CheckBound(float newValue, float prevValue, float maxDiff) 
