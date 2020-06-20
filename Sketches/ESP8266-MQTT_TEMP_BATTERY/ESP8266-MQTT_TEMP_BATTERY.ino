@@ -9,7 +9,7 @@
 #define DHTPIN 4                                // DHT pin sensor  
 #define DHTTYPE DHT22                           // DHT sensor type
 #define humidity_topic "sensor/my-shellyHT1/humidity"        // Humidity MQTT channel
-#define temperature_topic "sensor//my-shellyHT1/temperature"  // Temperature MQTT channel
+#define temperature_topic "sensor/my-shellyHT1/temperature"  // Temperature MQTT channel
 
 eSPIFFS fileSystem;
 
@@ -83,6 +83,8 @@ void loop()
 
      fileSystem.saveToFile("/LastTemp.txt", temp);
      fileSystem.saveToFile("/LastHumi.txt", hum);
+
+     delay(3000);
   }
 
   // 30e7 corresponds to 300000000 microseconds which is equal to 300 seconds => 5 minutes.
