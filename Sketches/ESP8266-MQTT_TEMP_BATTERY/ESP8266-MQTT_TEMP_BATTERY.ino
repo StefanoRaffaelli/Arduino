@@ -18,7 +18,7 @@ DHT dht(DHTPIN, DHTTYPE);       // DHT sensor initialization
 float temp = 0.0;
 float hum = 0.0;
 float temperatureDiff = 0.5;    // Temperature thresold
-float humidityDiff = 1.0;       // Humidity thresold
+float humidityDiff = 5.0;       // Humidity thresold
 
 EspMQTTClient client(
   "RafSasNetwork",          // WIFI username
@@ -87,8 +87,8 @@ void loop()
      delay(3000);
   }
 
-  // 30e7 corresponds to 300000000 microseconds which is equal to 300 seconds => 5 minutes.
-  ESP.deepSleep(30e7); 
+  // 90e7 corresponds to 900000000 microseconds which is equal to 900 seconds => 15 minutes.
+  ESP.deepSleep(90e7); 
 }
 
 bool CheckBound(float newValue, float prevValue, float maxDiff) 
